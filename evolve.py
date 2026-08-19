@@ -69,12 +69,19 @@ class EvolveCNN(object):
     def initialize_population(self):
         if (not self.horovod_enabled) or self.rank == 0:
             StatusUpdateTool.begin_evolution()
-            pops = Population(self.params, 0)
-            pops.initialize()
-            self.pops = pops
+    
+        if self.horovod_enabled:
+            hvd.barrier()
+    
+        pops = Population(self.params, 0)
+        pops.initialize()
+        self.pops = pops
+    
         if self.horovod_enabled:
             self.pops = self.sync_individuals(self.pops)
             hvd.barrier()
+
+
 
     def setup_belief_manager(self, restore_existing):
         belief_config = BeliefConfig.from_ini()
